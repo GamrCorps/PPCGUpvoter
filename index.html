@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>PPCG Upvoter</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script> 
+    var upvotes = 0.0; 
+    var upvotesPerClick = 1.0;
+	var upvotesPerSecond = 0.0;
+    var upvoteLabel = document.getElementById("upvoteLabel");
+	
+	var buildingNames  = ["Serial Upvoting Bot", "Good Question", "Good Answer", "Accepted Answer", "Sandboxed Question", "Help From Chat", "Collaborative KOTH Bot", "Abused Language Exploit", "Be Peter Taylor", "Help From Dennis", "Outgolfed Dennis"]
+	var buildingCosts  = [15.0, 100.0, 500.0, 3000.0, 10000.0, 40000.0, 200000.0, 1666666.0, 123456789.0, 3999999999.0, 75000000000.0]
+	var buildingUPS    = [0.1, 0.5, 4.0, 10, 40, 100, 400, 6666, 98765, 999999, 10000000]
+	var buildingAmount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+	
+    function clicked() {
+       upvotes += upvotesPerClick;
+       update();
+    }
+    function update() {
+       document.getElementById("upvoteLabel").innerHTML = upvotes.toFixed();
+	   document.getElementById("upsLabel").innerHTML = upvotesPerSecond.toFixed(1);
+    }
+	
+	function loadBounties() {
+		for (var i = 0; i < buildingNames.length; i++) {
+			addBounty(i,buildingNames[i],buildingCosts[i]);
+		}
+	}
+	function addBounty(id, name, cost) {
+        var ul = document.getElementById("bounties");
+        var li = document.createElement("li");
+		li.setAttribute('class','list-group-item');
+        li.innerHTML = '<div class="btn-group" id="bounty' + id + '"><button type="button" class="btn btn-primary disabled" style="cursor:default">' + name + '  <span class="badge" id="badge' + id + '">0</span></button><button type="button" class="btn btn-success" onclick="buy(' + id + ');">Give Bounty <span class="badge" id="cost' + id + '">' + buildingCosts[id] + '</span></button><button type="button" class="btn btn-warning" onclick="sell(' + id + ');">Win Bounty</button></div>';
+        ul.appendChild(li);
+    }
+	
+	function buy(i) {
+		if (upvotes >= buildingCosts[i]*Math.pow(1.15,buildingAmount[i])) {
+			upvotes -= buildingCosts[i]*Math.pow(1.15,buildingAmount[i]);
+			buildingAmount[i] += 1;
+			upvotesPerSecond += buildingUPS[i];
+			document.getElementById("badge"+i).innerHTML = buildingAmount[i];
+			document.getElementById("cost"+i).innerHTML = Math.ceil(buildingCosts[i]*Math.pow(1.15,buildingAmount[i]));
+		}
+	}
+	function sell(i) {
+		if (buildingAmount[i] > 0) {
+			upvotes += buildingCosts[i]*Math.pow(1.15,buildingAmount[i])/2;
+			upvotesPerSecond -= buildingUPS[i];
+			buildingAmount[i] -= 1;
+			document.getElementById("badge"+i).innerHTML = buildingAmount[i];
+			document.getElementById("cost"+i).innerHTML = Math.ceil(buildingCosts[i]*Math.pow(1.15,buildingAmount[i]));
+		}
+	}
+	function updateFromUPS() {
+		upvotes += upvotesPerSecond;
+	    document.getElementById("upvoteLabel").innerHTML = upvotes.toFixed();
+	    document.getElementById("upsLabel").innerHTML = upvotesPerSecond.toFixed(1);
+	}
+	
+	function saveGame() {
+	    var gameid = "upvotes="+upvotes+";upvotesPerSecond="+upvotesPerSecond+";buildingAmount=["+buildingAmount.toString()+"];";
+	    prompt("Game ID: ", window.btoa(gameid));
+	}
+	
+	function loadGame() {
+	    eval(window.atob(prompt("Game ID:")));
+	    for (var i = 0; i < buildingNames.length; i++) {
+	        document.getElementById("badge"+i).innerHTML = buildingAmount[i];
+	        document.getElementById("cost"+i).innerHTML = Math.ceil(buildingCosts[i]*Math.pow(1.15,buildingAmount[i]));
+	    }
+	}
+	
+	window.setInterval(function(){
+		updateFromUPS();
+	}, 1000);
+
+  </script>
+</head>
+<body onload="loadBounties();">
+
+<div class="container">
+  <div class="jumbotron">
+    <h1>PPCG Upvoter</h1>
+    <p>By GamrCorps</p> 
+  </div>
+  <div class="row">
+    <div class="col-sm-6">
+      <button class="btn btn-success btn-block" id="saveButton" onclick="saveGame();">Save Game</button>
+    </div>
+    <div class="col-sm-6">
+	  <button class="btn btn-primary btn-block" id="loadButton" onclick="loadGame();">Load Game</button>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-6">
+      <h3>Upvotes: <span id="upvoteLabel">0</span></h3>
+	  <h4>UPS: <span id="upsLabel">0.0</span></h4>
+      <br>
+      <button class="btn btn-info" id="clicker" onclick="clicked();"><img class="img-responsive" src="http://i.imgur.com/XejS0g5.png" alt="Chania"></button>
+    </div>
+    <div class="col-sm-6">
+      <h3>Bounties</h3>
+	  <ul class="list-group" id="bounties">
+      </ul>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
